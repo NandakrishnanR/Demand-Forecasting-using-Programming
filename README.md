@@ -1,0 +1,33 @@
+install.packages("forecast")
+install.packages("tseries")
+install.packages("ggplot2")
+install.packages("dplyr")
+install.packages("gridExtra")
+install.packages("grid")
+library(grid)
+library(gridExtra)
+
+library(forecast)
+library(tseries)
+library(ggplot2)
+library(dplyr)
+getwd()
+data <- read.csv("Invoice.csv")
+str(data)
+summary(data)
+data$Date <- as.Date(data$Date)
+ts_data <- ts(data$Quantity, frequency = 52)  
+plot(ts_data, main = "Product Sales Over Time", xlab = "Time", ylab = "Sales")
+arima_model <- auto.arima(ts_data)
+forecast_result <- forecast(arima_model, h = 52) 
+print(forecast_result)
+accuracy_result <- accuracy(forecast_result)
+print(accuracy_result)
+forecast_plot <- autoplot(forecast_result) +
+  labs(title = "Product Sales Forecast", x = "Time", y = "Sales") +
+  theme_minimal()
+data_df <- data.frame(Date = time(ts_data), Quantity = as.numeric(ts_data))
+combined_plot <- forecast_plot + 
+  geom_line(data = data_df, aes(x = Date, y = Quantity), color = "red", linetype = "dashed") +
+  labs(title = "Combined Forecast and Actual Sales")
+print(combined_plot)
